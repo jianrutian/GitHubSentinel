@@ -7,7 +7,7 @@ from logger import LOG  # 导入日志模块
 
 class GitHubClient:
     def __init__(self, token):
-        self.token = token  # GitHub API令牌
+        self.token = os.getenv("GITHUB_TOKEN")  # GitHub API令牌
         self.headers = {'Authorization': f'token {self.token}'}  # 设置HTTP头部认证信息
 
     def fetch_updates(self, repo, since=None, until=None):
