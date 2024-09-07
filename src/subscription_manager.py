@@ -1,4 +1,5 @@
 import json
+from logger import LOG  # 导入日志模块
 
 class SubscriptionManager:
     def __init__(self, subscriptions_file):
@@ -18,10 +19,12 @@ class SubscriptionManager:
     
     def add_subscription(self, repo):
         if repo not in self.subscriptions:
+            LOG.info("add " + repo)
             self.subscriptions.append(repo)
             self.save_subscriptions()
     
     def remove_subscription(self, repo):
         if repo in self.subscriptions:
+            LOG.info("remove " + repo)
             self.subscriptions.remove(repo)
             self.save_subscriptions()
