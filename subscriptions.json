@@ -1,11 +1,9 @@
 [
     "langchain-ai/langchain",
-    "DjangoPeng/openai-quickstart",
     "ollama/ollama",
     "asterisk/asterisk",
     "DjangoPeng/GitHubSentinel",
     "microsoft/autogen",
-    "DjangoPeng/agent-hub",
     "open-webui/open-webui",
     "langgenius/dify"
 ]

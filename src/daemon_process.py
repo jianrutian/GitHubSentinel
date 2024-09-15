@@ -5,6 +5,7 @@ import sys  # 导入sys库，用于执行系统相关的操作
 
 from config import Config  # 导入配置管理类
 from github_client import GitHubClient  # 导入GitHub客户端类，处理GitHub API请求
+from hackernews_client import HackerNewsClient
 from notifier import Notifier  # 导入通知器类，用于发送通知
 from report_generator import ReportGenerator  # 导入报告生成器类
 from llm import LLM  # 导入语言模型类，可能用于生成报告内容
@@ -29,6 +30,18 @@ def github_job(subscription_manager, github_client, report_generator, notifier, 
         notifier.notify(repo, report)
     LOG.info(f"[定时任务执行完毕]")
 
+def hackernews_job(hackernews_manager, hackernews_client, report_generator, notifier, days):
+    LOG.info("[开始执行定时任务]")
+    types = hackernews_manager.list_subscriptions()
+    LOG.info(f"Hacker News列表：{types}")
+    for type in types:
+        # 遍历每个订阅的仓库，执行以下操作
+        markdown_file_path = hackernews_client.export_daily_progress(type)
+        # 从Markdown文件自动生成进展简报
+        report, report_file_path = report_generator.generate_daily_report(markdown_file_path)
+        notifier.notify(type, report)
+    LOG.info(f"[定时任务执行完毕]")
+
 
 def main():
     # 设置信号处理器
@@ -37,17 +50,27 @@ def main():
     config = Config()  # 创建配置实例
     github_client = GitHubClient(config.github_token)  # 创建GitHub客户端实例
     notifier = Notifier(config.email)  # 创建通知器实例
-    llm = LLM()  # 创建语言模型实例
-    report_generator = ReportGenerator(llm)  # 创建报告生成器实例
+    github_llm = LLM()  # 创建语言模型实例
+    report_generator = ReportGenerator(github_llm)  # 创建报告生成器实例
     subscription_manager = SubscriptionManager(config.subscriptions_file)  # 创建订阅管理器实例
+
+    hackernews_client = HackerNewsClient()
+    hacker_llm = LLM("hacker_news")
+    hacker_report_generator = ReportGenerator(hacker_llm)
+    hackernews_manager = SubscriptionManager(config.hackernews_file)
 
     # 启动时立即执行（如不需要可注释）
     github_job(subscription_manager, github_client, report_generator, notifier, config.freq_days)
+    hackernews_job(hackernews_manager, hackernews_client, hacker_report_generator, notifier, config.freq_days)
 
     # 安排每天的定时任务
     schedule.every(config.freq_days).days.at(
         config.exec_time
     ).do(github_job, subscription_manager, github_client, report_generator, notifier, config.freq_days)
+
+    schedule.every(config.freq_days).days.at(
+        config.exec_time
+    ).do(hackernews_job, hackernews_manager, hackernews_client, hacker_report_generator, notifier, config.freq_days)
 
     try:
         # 在守护进程中持续运行
@@ -57,7 +80,6 @@ def main():
     except Exception as e:
         LOG.error(f"主进程发生异常: {str(e)}")
         sys.exit(1)
-
 
 
 if __name__ == '__main__':
