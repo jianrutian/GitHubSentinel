@@ -1,3 +1,4 @@
+
 import gradio as gr  # 导入gradio库用于创建GUI
 
 from config import Config  # 导入配置管理模块
@@ -21,19 +22,46 @@ def export_progress_by_date_range(repo, days):
 
     return report, report_file_path  # 返回报告内容和报告文件路径
 
+def remove_subscription(repo):
+    subscription_manager.remove_subscription(repo)
+    return f"删除{repo}成功！", gr.update(choices=subscription_manager.list_subscriptions()), gr.update(choices=subscription_manager.list_subscriptions())
+
+def add_subscription(repo):
+    subscription_manager.add_subscription(repo)
+    return f"增加{repo}成功！", gr.update(choices=subscription_manager.list_subscriptions()), gr.update(choices=subscription_manager.list_subscriptions())
+
 # 创建Gradio界面
-demo = gr.Interface(
-    fn=export_progress_by_date_range,  # 指定界面调用的函数
-    title="GitHubSentinel",  # 设置界面标题
-    inputs=[
-        gr.Dropdown(
-            subscription_manager.list_subscriptions(), label="订阅列表", info="已订阅GitHub项目"
-        ),  # 下拉菜单选择订阅的GitHub项目
-        gr.Slider(value=2, minimum=1, maximum=7, step=1, label="报告周期", info="生成项目过去一段时间进展，单位：天"),
-        # 滑动条选择报告的时间范围
-    ],
-    outputs=[gr.Markdown(), gr.File(label="下载报告")],  # 输出格式：Markdown文本和文件下载
-)
+with gr.Blocks(title="GitHubSentinel", theme=gr.themes.Monochrome()) as demo:
+    gr.Markdown("# GitHubSentinel")
+    with gr.Tab("生成报告"):
+        with gr.Row():
+            with gr.Column():
+                repo = gr.Dropdown(
+                    subscription_manager.list_subscriptions(), label="订阅列表", info="已订阅GitHub项目"
+                )  # 下拉菜单选择订阅的GitHub项目
+                days = gr.Slider(value=2, minimum=1, maximum=7, step=1, label="报告周期",
+                                 info="生成项目过去一段时间进展，单位：天")  # 滑动条选择报告的时间范围
+                submit_button = gr.Button("提交")
+            with gr.Column():
+                report = gr.Markdown()
+                report_file_path = gr.File(label="下载报告")
+
+    with gr.Tab("订阅管理"):
+        with gr.Row():
+            with gr.Column(scale=1):
+                del_repo = gr.Dropdown(
+                    subscription_manager.list_subscriptions(), label="选择要删除的订阅"
+                )  # 下拉菜单选择订阅的GitHub项目
+                del_button = gr.Button("删除订阅")
+            with gr.Column(scale=1):
+                add_repo = gr.Textbox(label="输入要添加的项目订阅", placeholder="请输入GitHub项目名称")
+                add_button = gr.Button("添加订阅")
+        result = gr.Markdown()
+
+    submit_button.click(export_progress_by_date_range, inputs=[repo, days], outputs=[report, report_file_path])
+    del_button.click(remove_subscription, inputs=del_repo, outputs=[result, del_repo, repo])
+    add_button.click(add_subscription, inputs=add_repo, outputs=[result, del_repo, repo])
+
 
 if __name__ == "__main__":
     demo.launch(share=True, server_name="0.0.0.0")  # 启动界面并设置为公共可访问
