@@ -1,20 +1,33 @@
 {
-    "github_token": "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",
+    "github": {
+        "token": "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",
+        "subscriptions_file": "subscriptions.json",
+        "progress_frequency_days": 1,
+        "progress_execution_time":"08:00"
+    },
+    "hacker_news": {
+        "progress_frequency_days": 1,
+        "progress_execution_time":"08:00",
+        "items_types": [
+            "topstories",
+            "newstories",
+            "beststories"
+        ],
+        "items_nums": 10
+    },
     "email":  {
-        "smtp_server": "smtp.exmail.qq.com",
+       "smtp_server": "smtp.qq.com",
         "smtp_port": 465,
-        "from": "pjt@zaijidata.com",
+        "from": "471374789@qq.com",
         "password": "",
-        "to": "test@zaijidata.com"
+        "to": "ivonzhou@126.com"
     },
     "slack_webhook_url": "your_slack_webhook_url",
-    "subscriptions_file": "subscriptions.json",
-    "github_progress_frequency_days": 1,
-    "github_progress_execution_time":"08:00",
     "llm": {
         "model_type": "ollama",
         "openai_model_name": "gpt-4o-mini",
-        "ollama_model_name": "llama3",
-        "ollama_api_url": "http://localhost:11434/api/chat"
+        "ollama_model_name": "llama3.1",
+        "deepseek_model_name": "deepseek-chat",
+        "ollama_api_url": "http://172.16.0.224:11434/api/chat"
     }
 }

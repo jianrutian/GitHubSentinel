@@ -1,6 +1,8 @@
 import json
+import os
 import requests
 from logger import LOG  # 导入日志模块
+from openai import OpenAI  # 导入OpenAI库用于访问GPT模型
 
 class LLM:
     def __init__(self, config):
@@ -12,18 +14,15 @@ class LLM:
         self.config = config
         self.model = config.llm_model_type.lower()  # 获取模型类型并转换为小写
         if self.model == "openai":
-            from openai import OpenAI  # 导入OpenAI库用于访问GPT模型
-            self.client = OpenAI()  # 创建OpenAI客户端实例
+            self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), base_url=os.getenv("OPENAI_API_BASE"))  # 创建OpenAI客户端实例
+        elif self.model == "deepseek":
+            self.client = OpenAI(api_key=os.getenv("DEEPSEEK_API_KEY"), base_url=os.getenv("DEEPSEEK_BASE_URL"))  # 创建OpenAI客户端实例
         elif self.model == "ollama":
             self.api_url = config.ollama_api_url  # 设置Ollama API的URL
         else:
             raise ValueError(f"Unsupported model type: {self.model}")  # 如果模型类型不支持，抛出错误
-        
-        # 从TXT文件加载系统提示信息
-        with open("prompts/report_prompt.txt", "r", encoding='utf-8') as file:
-            self.system_prompt = file.read()
 
-    def generate_daily_report(self, markdown_content, dry_run=False):
+    def generate_report(self, system_prompt, user_prompt):
         """
         生成每日报告，根据配置选择不同的模型来处理请求。
         
@@ -33,21 +32,15 @@ class LLM:
         """
         # 准备消息列表，包含系统提示和用户内容
         messages = [
-            {"role": "system", "content": self.system_prompt},
-            {"role": "user", "content": markdown_content},
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
         ]
-
-        if dry_run:
-            # 如果启用了dry_run模式，将不会调用模型，而是将提示信息保存到文件中
-            LOG.info("Dry run mode enabled. Saving prompt to file.")
-            with open("daily_progress/prompt.txt", "w+") as f:
-                json.dump(messages, f, indent=4, ensure_ascii=False)  # 将消息保存为JSON格式
-            LOG.debug("Prompt已保存到 daily_progress/prompt.txt")
-            return "DRY RUN"
 
         # 根据选择的模型调用相应的生成报告方法
         if self.model == "openai":
             return self._generate_report_openai(messages)
+        elif self.model == "deepseek":
+            return self._generate_report_deepseek(messages)
         elif self.model == "ollama":
             return self._generate_report_ollama(messages)
         else:
@@ -64,6 +57,25 @@ class LLM:
         try:
             response = self.client.chat.completions.create(
                 model=self.config.openai_model_name,  # 使用配置中的OpenAI模型名称
+                messages=messages
+            )
+            LOG.debug("GPT response: {}", response)
+            return response.choices[0].message.content  # 返回生成的报告内容
+        except Exception as e:
+            LOG.error(f"生成报告时发生错误：{e}")
+            raise
+
+    def _generate_report_deepseek(self, messages):
+        """
+        使用 deepseek 模型生成报告。
+
+        :param messages: 包含系统提示和用户内容的消息列表。
+        :return: 生成的报告内容。
+        """
+        LOG.info("使用 deepseek 模型开始生成报告。")
+        try:
+            response = self.client.chat.completions.create(
+                model=self.config.deepseek_model_name,  # 使用配置中的OpenAI模型名称
                 messages=messages
             )
             LOG.debug("GPT response: {}", response)
@@ -109,6 +121,9 @@ if __name__ == '__main__':
     config = Config()
     llm = LLM(config)
 
+    with open("prompts/github_prompt.txt", "r", encoding='utf-8') as f:
+        system_prompt = f.read()
+
     markdown_content="""
 # Progress for langchain-ai/langchain (2024-08-20 to 2024-08-21)
 
@@ -119,5 +134,5 @@ if __name__ == '__main__':
 - docs: update examples in api ref #25589
 """
 
-    report = llm.generate_daily_report(markdown_content, dry_run=False)
+    report = llm.generate_report(system_prompt, markdown_content)
     print(report)

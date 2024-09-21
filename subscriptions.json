@@ -1,4 +1,9 @@
 [
+    "langchain-ai/langchain",
     "ollama/ollama",
-    "vllm-project/vllm"
+    "vllm-project/vllm",
+    "asterisk/asterisk",
+    "microsoft/autogen",
+    "open-webui/open-webui",
+    "langgenius/dify"
 ]

@@ -166,3 +166,6 @@ daily_progress/*
 src/jupyter/*.md
 src/jupyter/daily_progress/*
 run/*
+github_reports/*
+hacker_news_reports/*
+.idea/
