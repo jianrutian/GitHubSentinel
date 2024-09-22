@@ -19,6 +19,8 @@ def generate_github_report(model_type, model_name, repo, days):
 
     if model_type == "openai":
         config.openai_model_name = model_name
+    elif model_type == "deepseek":
+        config.deepseek_model_name = model_name
     else:
         config.ollama_model_name = model_name
 
@@ -36,6 +38,8 @@ def generate_hn_hour_topic(model_type, model_name):
 
     if model_type == "openai":
         config.openai_model_name = model_name
+    elif model_type == "deepseek":
+        config.deepseek_model_name = model_name
     else:
         config.ollama_model_name = model_name
 
@@ -54,6 +58,8 @@ def update_model_list(model_type):
         return gr.Dropdown(choices=["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"], label="选择模型")
     elif model_type == "ollama":
         return gr.Dropdown(choices=["llama3.1", "gemma2:2b", "qwen2:7b"], label="选择模型")
+    elif model_type == "deepseek":
+        return gr.Dropdown(choices=["deepseek-chat", "deepseek-code"], label="选择模型")
 
 
 # 创建 Gradio 界面
@@ -63,7 +69,7 @@ with gr.Blocks(title="GitHubSentinel") as demo:
         gr.Markdown("## GitHub 项目进展")  # 添加小标题
 
         # 创建 Radio 组件
-        model_type = gr.Radio(["openai", "ollama"], label="模型类型", info="使用 OpenAI GPT API 或 Ollama 私有化模型服务")
+        model_type = gr.Radio(["openai", "ollama", "deepseek"], label="模型类型", info="使用 OpenAI GPT API ,deepseek 或 Ollama 私有化模型服务")
 
         # 创建 Dropdown 组件
         model_name = gr.Dropdown(choices=["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"], label="选择模型")
@@ -92,7 +98,7 @@ with gr.Blocks(title="GitHubSentinel") as demo:
         gr.Markdown("## Hacker News 热点话题")  # 添加小标题
 
         # 创建 Radio 组件
-        model_type = gr.Radio(["openai", "ollama"], label="模型类型", info="使用 OpenAI GPT API 或 Ollama 私有化模型服务")
+        model_type = gr.Radio(["openai", "ollama", "deepseek"], label="模型类型", info="使用 OpenAI GPT API , deepseek 或 Ollama 私有化模型服务")
 
         # 创建 Dropdown 组件
         model_name = gr.Dropdown(choices=["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"], label="选择模型")
