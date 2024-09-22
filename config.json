@@ -6,17 +6,18 @@
         "progress_execution_time": "08:00"
     },
     "email":  {
-        "smtp_server": "smtp.exmail.qq.com",
+        "smtp_server": "smtp.qq.com",
         "smtp_port": 465,
-        "from": "pjt@zaijidata.com",
+        "from": "471374789@qq.com",
         "password": "",
-        "to": "test@zaijidata.com"
+        "to": "ivonzhou@126.com"
     },
     "llm": {
-        "model_type": "ollama",
+        "model_type": "deepseek",
         "openai_model_name": "gpt-4o-mini",
-        "ollama_model_name": "llama3",
-        "ollama_api_url": "http://localhost:11434/api/chat"
+        "ollama_model_name": "llama3.1",
+        "deepseek_model_name": "deepseek-chat",
+        "ollama_api_url": "http://172.16.0.224:11434/api/chat"
     },
     "report_types": ["github", "hacker_news"],
     "slack": {

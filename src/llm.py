@@ -16,7 +16,9 @@ class LLM:
         self.model = config.llm_model_type.lower()  # 获取模型类型并转换为小写
         self.prompts = {}  # 存储所有预加载的提示信息
         if self.model == "openai":
-            self.client = OpenAI()  # 创建OpenAI客户端实例
+            self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), base_url=os.getenv("OPENAI_API_BASE"))  # 创建OpenAI客户端实例
+        elif self.model == "deepseek":
+            self.client = OpenAI(api_key=os.getenv("DEEPSEEK_API_KEY"), base_url=os.getenv("DEEPSEEK_BASE_URL"))
         elif self.model == "ollama":
             self.api_url = config.ollama_api_url  # 设置Ollama API的URL
         else:
@@ -70,6 +72,8 @@ class LLM:
         # 根据选择的模型调用相应的生成报告方法
         if self.model == "openai":
             return self._generate_report_openai(messages, report_type)
+        elif self.model == "deepseek":
+            return self._generate_report_deepseek(messages)
         elif self.model == "ollama":
             return self._generate_report_ollama(messages, report_type)
         else:
@@ -127,6 +131,24 @@ class LLM:
             LOG.error(f"生成报告时发生错误：{e}")
             raise
 
+    def _generate_report_deepseek(self, messages):
+        """
+        使用 deepseek 模型生成报告。
+
+        :param messages: 包含系统提示和用户内容的消息列表。
+        :return: 生成的报告内容。
+        """
+        LOG.info("使用 deepseek 模型开始生成报告。")
+        try:
+            response = self.client.chat.completions.create(
+                model=self.config.deepseek_model_name,  # 使用配置中的OpenAI模型名称
+                messages=messages
+            )
+            LOG.debug("GPT response: {}", response)
+            return response.choices[0].message.content  # 返回生成的报告内容
+        except Exception as e:
+            LOG.error(f"生成报告时发生错误：{e}")
+            raise
 
 if __name__ == '__main__':
     from config import Config  # 导入配置管理类
