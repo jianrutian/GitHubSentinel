@@ -13,10 +13,11 @@
         "to": "ivonzhou@126.com"
     },
     "llm": {
-        "model_type": "deepseek",
-        "openai_model_name": "gpt-4o-mini",
+        "model_type": "glm",
+        "openai_model_name": "gpt-3.5-turbo",
         "ollama_model_name": "llama3.1",
         "deepseek_model_name": "deepseek-chat",
+        "glm_model_name": "glm-4-air",
         "ollama_api_url": "http://172.16.0.224:11434/api/chat"
     },
     "report_types": [

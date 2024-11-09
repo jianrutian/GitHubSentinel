@@ -19,6 +19,8 @@ class LLM:
             self.client = OpenAI(api_key=os.getenv("DEEPSEEK_API_KEY"), base_url=os.getenv("DEEPSEEK_BASE_URL"))
         elif self.model == "ollama":
             self.api_url = config.ollama_api_url  # 设置Ollama API的URL
+        elif self.model == "glm":
+            self.client = OpenAI(api_key=os.getenv("GLM_API_KEY"), base_url=os.getenv("GLM_BASE_URL"))
         else:
             LOG.error(f"不支持的模型类型: {self.model}")
             raise ValueError(f"不支持的模型类型: {self.model}")  # 如果模型类型不支持，抛出错误
@@ -43,6 +45,8 @@ class LLM:
             return self._generate_report_deepseek(messages)
         elif self.model == "ollama":
             return self._generate_report_ollama(messages)
+        elif self.model == "glm":
+            return self._generate_report_glm(messages)
         else:
             raise ValueError(f"不支持的模型类型: {self.model}")
 
@@ -109,6 +113,24 @@ class LLM:
         try:
             response = self.client.chat.completions.create(
                 model=self.config.deepseek_model_name,  # 使用配置中的OpenAI模型名称
+                messages=messages
+            )
+            LOG.debug("GPT response: {}", response)
+            return response.choices[0].message.content  # 返回生成的报告内容
+        except Exception as e:
+            LOG.error(f"生成报告时发生错误：{e}")
+            raise
+
+    def _generate_report_glm(self, messages):
+        """
+        使用 deepseek 模型生成报告。
+        :param messages: 包含系统提示和用户内容的消息列表。
+        :return: 生成的报告内容。
+        """
+        LOG.info("使用 glm 模型开始生成报告。")
+        try:
+            response = self.client.chat.completions.create(
+                model=self.config.glm_model_name,  # 使用配置中的GLM模型名称
                 messages=messages
             )
             LOG.debug("GPT response: {}", response)
